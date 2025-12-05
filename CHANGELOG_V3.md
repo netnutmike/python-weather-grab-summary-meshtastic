@@ -154,6 +154,15 @@ For users upgrading from v2.5:
 
 See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed instructions.
 
+### Bug Fixes
+
+#### Preamble Separator Issue
+- **Fixed:** Added entry separator after preamble for consistent formatting
+- **Before:** `WEATHER:#76#1pm,9,75#` (no separator after preamble)
+- **After:** `WEATHER:##76#1pm,9,75#` (separator added after preamble)
+- **Impact:** Ensures consistent parsing when preamble is used
+- **Files Modified:** `weather_formatter/formatter.py`, `tests/test_formatter.py`
+
 ### Known Issues
 
 None at this time.

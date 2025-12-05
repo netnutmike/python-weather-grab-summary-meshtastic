@@ -51,7 +51,9 @@ class WeatherFormatter:
         """Format complete output string with current temp and forecast.
         
         Creates the full output string following the pattern:
-        [preamble][entry_sep][current_temp][entry_sep][forecast_1][entry_sep]...[entry_sep]
+        [preamble][entry_sep][entry_sep][current_temp][entry_sep][forecast_1][entry_sep]...[entry_sep]
+        
+        If preamble is specified, an entry separator is added after it.
         
         Args:
             current_temp: Current temperature value
@@ -61,8 +63,11 @@ class WeatherFormatter:
             Formatted output string
             
         Example:
-            With defaults (entry_sep="#", field_sep=",", fields=["hour","icon","temp","precip"]):
+            Without preamble (entry_sep="#", field_sep=",", fields=["hour","icon","temp","precip"]):
             "#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#"
+            
+            With preamble="WEATHER:" (entry_sep="#"):
+            "WEATHER:##76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#"
         """
         # Start with entry separator
         output_parts = [self.config.entry_separator]
@@ -173,7 +178,8 @@ class WeatherFormatter:
     def _apply_preamble(self, output: str) -> str:
         """Apply preamble prefix to output string.
         
-        Adds the configured preamble string to the beginning of the output.
+        Adds the configured preamble string to the beginning of the output,
+        followed by an entry separator to maintain consistent formatting.
         Handles empty preambles (returns output unchanged) and supports
         multi-character and special character preambles.
         
@@ -181,13 +187,13 @@ class WeatherFormatter:
             output: Output string to prefix
             
         Returns:
-            Output string with preamble prefix, or unchanged if preamble is empty
+            Output string with preamble prefix and separator, or unchanged if preamble is empty
             
         Example:
             >>> formatter._apply_preamble("#76#1pm,9,75#")
-            "WEATHER:#76#1pm,9,75#"  # if preamble is "WEATHER:"
+            "WEATHER:##76#1pm,9,75#"  # if preamble is "WEATHER:" and entry_sep is "#"
         """
         if not self.config.preamble:
             return output
         
-        return self.config.preamble + output
+        return self.config.preamble + self.config.entry_separator + output

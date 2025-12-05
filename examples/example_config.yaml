@@ -275,7 +275,8 @@ icon_mappings:
 # [entry_sep][current_temp][entry_sep][hour][field_sep][icon][field_sep][temp][field_sep][precip][entry_sep]...
 
 # Example with preamble "WEATHER:":
-# WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
+# WEATHER:##76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
+# Note: An entry separator is added after the preamble
 
 # Example with custom separators (entry_sep: "|", field_sep: ":"):
 # |76|1pm:9:75:0.0|2pm:9:76:0.0|3pm:9:76:0.0|

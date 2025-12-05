@@ -87,7 +87,7 @@ class TestWeatherFormatter:
         assert output == "|74|1pm;75|2pm;76|"
     
     def test_format_output_with_preamble(self):
-        """Test output formatting with preamble."""
+        """Test output formatting with preamble and separator."""
         config = WeatherConfig(
             entry_separator="#",
             field_separator=",",
@@ -101,8 +101,10 @@ class TestWeatherFormatter:
         
         output = formatter.format_output(74.0, forecast)
         
-        assert output.startswith("WEATHER:")
+        assert output.startswith("WEATHER:#")
         assert "#74#" in output
+        # Full output should be: WEATHER:##74#1pm,75#
+        assert output == "WEATHER:##74#1pm,75#"
     
     def test_format_output_empty_forecast(self):
         """Test output formatting with empty forecast list."""
@@ -308,14 +310,14 @@ class TestWeatherFormatter:
         assert formatter._get_field_value(weather, "nonexistent") is None
     
     def test_apply_preamble(self):
-        """Test applying preamble to output."""
-        config = WeatherConfig(preamble="WEATHER:")
+        """Test applying preamble to output with separator."""
+        config = WeatherConfig(preamble="WEATHER:", entry_separator="#")
         icon_mapper = IconMapper({"default": "?"})
         formatter = WeatherFormatter(config, icon_mapper)
         
         output = "#74#1pm,9,75#"
         result = formatter._apply_preamble(output)
-        assert result == "WEATHER:#74#1pm,9,75#"
+        assert result == "WEATHER:##74#1pm,9,75#"
     
     def test_apply_preamble_empty(self):
         """Test applying empty preamble returns unchanged output."""
@@ -328,14 +330,14 @@ class TestWeatherFormatter:
         assert result == "#74#1pm,9,75#"
     
     def test_apply_preamble_special_characters(self):
-        """Test applying preamble with special characters."""
-        config = WeatherConfig(preamble=">>> ")
+        """Test applying preamble with special characters and separator."""
+        config = WeatherConfig(preamble=">>> ", entry_separator="#")
         icon_mapper = IconMapper({"default": "?"})
         formatter = WeatherFormatter(config, icon_mapper)
         
         output = "#74#"
         result = formatter._apply_preamble(output)
-        assert result == ">>> #74#"
+        assert result == ">>> ##74#"
     
     def test_format_output_different_field_combinations(self):
         """Test formatting with different field combinations."""
