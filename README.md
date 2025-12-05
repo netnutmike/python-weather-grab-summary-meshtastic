@@ -1,8 +1,8 @@
 # Weather Formatter
 
-A Python command-line application that retrieves weather data from OpenWeatherMap API v3 and outputs it in a highly configurable, condensed format. Perfect for integrating weather information into status bars, messaging systems like Meshtastic, or any application requiring compact weather data.
+A Python command-line application that retrieves weather data from OpenWeatherMap API 3.0 and outputs it in a highly configurable, condensed format. Perfect for integrating weather information into status bars, messaging systems like Meshtastic, or any application requiring compact weather data.
 
-**Note:** This application uses OpenWeatherMap's One Call API 3.0, which requires latitude and longitude coordinates. The application can automatically convert US ZIP codes to coordinates using the Geocoding API.
+> **Note**: This application uses OpenWeather One Call API 3.0, which requires a subscription. A free tier is available with 1,000 calls/day. See [Getting an OpenWeatherMap API Key](#getting-an-openweathermap-api-key) for setup instructions.
 
 ## Features
 
@@ -19,7 +19,7 @@ A Python command-line application that retrieves weather data from OpenWeatherMa
 ### Prerequisites
 
 - Python 3.8 or higher
-- OpenWeatherMap API key with One Call API 3.0 access (subscription required, free tier available at https://openweathermap.org/api)
+- OpenWeatherMap API key (free tier available at https://openweathermap.org/api)
 
 ### Install from Source
 
@@ -48,24 +48,16 @@ The application requires the following Python packages:
 
 ## Quick Start
 
-1. **Get an API Key**: Sign up for an API key at https://openweathermap.org/api
-   - Subscribe to the One Call API 3.0 (free tier available with 1,000 calls/day)
-   - Note: New API keys may take a few hours to activate
+1. **Get an API Key**: Sign up for a free API key at https://openweathermap.org/api
 
 2. **Run the application** (this will create a default config file):
 ```bash
 weather-formatter
 ```
 
-3. **Edit the config file** (`weather_config.yaml`) and add your API key and location:
+3. **Edit the config file** (`weather_config.yaml`) and add your API key and zipcode:
 ```yaml
 api_key: "your_api_key_here"
-
-# Option 1: Use latitude and longitude
-latitude: 40.7128
-longitude: -74.0060
-
-# Option 2: Use ZIP code (will be auto-converted to lat/lon)
 zipcode: "10001"
 ```
 
@@ -93,10 +85,15 @@ weather-formatter [OPTIONS]
 
 #### Location and API Options
 
-- `--lat, --latitude LATITUDE` - Latitude coordinate for weather lookup
-- `--lon, --longitude LONGITUDE` - Longitude coordinate for weather lookup
-- `-z, --zipcode ZIPCODE` - US ZIP code for weather lookup (5 digits, will be converted to lat/lon)
+**Location** (choose one):
+- `-z, --zipcode ZIPCODE` - US ZIP code for weather lookup (5 digits)
+- `--latitude LATITUDE` - Latitude in decimal format (-90 to 90)
+- `--longitude LONGITUDE` - Longitude in decimal format (-180 to 180)
+
+**API Key:**
 - `-k, --api-key API_KEY` - OpenWeatherMap API key
+
+**Note**: Provide either a ZIP code OR both latitude and longitude coordinates, not both.
 
 #### Forecast Options
 
@@ -124,11 +121,11 @@ weather-formatter [OPTIONS]
 #### Basic Usage with CLI Arguments
 
 ```bash
-# Get weather using latitude and longitude
-weather-formatter --lat 40.7128 --lon -74.0060 -k YOUR_API_KEY
-
-# Get weather for a specific zipcode (auto-converts to lat/lon)
+# Get weather for a specific ZIP code
 weather-formatter -z 10001 -k YOUR_API_KEY
+
+# Get weather using GPS coordinates
+weather-formatter --latitude 40.7128 --longitude -74.0060 -k YOUR_API_KEY
 
 # Get 8-hour forecast for tomorrow
 weather-formatter --hours 8 --day tomorrow
@@ -150,8 +147,12 @@ weather-formatter --fields hour,icon,temp,humidity,wind_speed
 #### Using a Preamble
 
 ```bash
-# Add a prefix to the output
+# Add a prefix to the output (replaces the leading #)
 weather-formatter --preamble "WEATHER:"
+# Output: WEATHER:76#1pm,9,75,0.0#...#
+
+# Or include the # in the preamble if desired
+weather-formatter --preamble "WEATHER:#"
 # Output: WEATHER:#76#1pm,9,75,0.0#...#
 ```
 
@@ -172,11 +173,11 @@ The application uses a YAML configuration file (default: `weather_config.yaml`) 
 # Weather API Configuration
 api_key: "YOUR_API_KEY_HERE"
 
-# Location (use either lat/lon or zipcode)
-latitude: 40.7128
-longitude: -74.0060
-# OR
+# Location (use either zipcode OR coordinates)
 zipcode: "10001"
+# OR
+# latitude: 40.7128
+# longitude: -74.0060
 
 # Forecast Settings
 forecast_hours: 5
@@ -211,6 +212,30 @@ icon_mappings:
   "windy": ";"
   "default": "?"
 ```
+
+### Location Options
+
+The application supports two methods for specifying location:
+
+#### Option 1: US ZIP Code
+```yaml
+zipcode: "10001"
+```
+- Simple 5-digit US ZIP code
+- Automatically geocoded to coordinates (cached for efficiency)
+- Limited to US locations only
+
+#### Option 2: GPS Coordinates (Decimal Format)
+```yaml
+latitude: 40.7128   # Range: -90 to 90
+longitude: -74.0060  # Range: -180 to 180
+```
+- Works for any location worldwide
+- More precise location specification
+- Saves one geocoding API call per session
+- No ZIP code lookup required
+
+**Important**: Use either ZIP code OR coordinates, not both. The configuration will be rejected if both are provided.
 
 ### Available Output Fields
 
@@ -268,29 +293,43 @@ weather-formatter --hours 10 --day tomorrow --entry-sep "|"
 
 ## Getting an OpenWeatherMap API Key
 
+**IMPORTANT: This application uses OpenWeather One Call API 3.0**
+
 1. Go to https://openweathermap.org/api
 2. Sign up for a free account
-3. Subscribe to the One Call API 3.0 (free tier available)
-4. Navigate to your API keys section
-5. Copy your API key
-6. Add it to your `weather_config.yaml` file or use the `-k` flag
+3. Subscribe to One Call API 3.0 at https://home.openweathermap.org/subscriptions
+4. Select the "One Call by Call" subscription (includes a free tier)
+5. Navigate to your API keys section
+6. Copy your API key
+7. Add it to your `weather_config.yaml` file or use the `-k` flag
 
-**Important:** This application uses the One Call API 3.0, which requires a subscription. The free tier includes:
+The free tier includes:
 - 1,000 API calls per day
 - Current weather data
-- Hourly forecast for 48 hours
-- Daily forecast for 8 days
-- Historical weather data (1 day back)
+- Hourly forecasts for up to 48 hours
+- Daily forecasts for up to 8 days
+- UV index, dew point, and other detailed metrics
+- Weather alerts (excluded by default in this app)
 
-Note: New API keys may take a few hours to activate.
+### Migration from API 2.5
+
+If you were previously using OpenWeather API 2.5, note the following changes:
+
+- **Subscription Required**: API 3.0 requires a subscription (free tier available)
+- **Better Hourly Data**: Hourly forecasts instead of 3-hour intervals
+- **More Details**: Additional fields like UV index and dew point are now available
+- **Geocoding**: ZIP codes are automatically converted to coordinates (cached for efficiency)
+- **No Code Changes**: The application interface remains the same - just update your API key
 
 ## Output Format
 
 The output follows this structure:
 
 ```
-[preamble][entry_sep][current_temp][entry_sep][forecast_1][entry_sep][forecast_2]...[entry_sep]
+[preamble or entry_sep][current_temp][entry_sep][forecast_1][entry_sep][forecast_2]...[entry_sep]
 ```
+
+**Note**: The preamble replaces the leading entry separator. If no preamble is configured, output starts with the entry separator.
 
 Each forecast entry contains the configured fields separated by the field separator:
 
@@ -305,7 +344,12 @@ Each forecast entry contains the configured fields separated by the field separa
 #76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#4pm,9,75,0.0#5pm,9,74,0.0#
 ```
 
-**With Preamble:**
+**With Preamble "WEATHER:":**
+```
+WEATHER:76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
+```
+
+**With Preamble "WEATHER:#":**
 ```
 WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
 ```
@@ -332,21 +376,19 @@ WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
 
 ### "Invalid API key" Error
 
-**Problem:** The API key is not recognized by OpenWeatherMap or doesn't have access to One Call API 3.0.
+**Problem:** The API key is not recognized by OpenWeatherMap.
 
 **Solution:**
 - Verify your API key is correct (copy it from your OpenWeatherMap account)
-- Ensure you've subscribed to the One Call API 3.0 (even the free tier requires subscription)
 - New API keys can take a few hours to activate
 - Ensure there are no extra spaces or quotes around the key in the config file
 
-### "Location not found" Error
+### "Invalid zipcode" Error
 
-**Problem:** The coordinates or zipcode could not be found.
+**Problem:** The zipcode format is incorrect or not found.
 
 **Solution:**
-- If using coordinates, ensure latitude is between -90 and 90, longitude between -180 and 180
-- If using a zipcode, ensure it's a valid 5-digit US ZIP code
+- Ensure the zipcode is a 5-digit US ZIP code
 - Verify the zipcode exists and is valid
 - Check for typos in the config file or command line
 
