@@ -1,6 +1,10 @@
 # Changelog: API v3.0 Upgrade
 
-## Version 3.0.0 - OpenWeatherMap API v3 Migration
+## Version 2.0.0 - OpenWeatherMap API v3 Migration
+
+**Release Date:** December 5, 2024
+
+This is a major version release with breaking changes requiring user action.
 
 ### Breaking Changes
 

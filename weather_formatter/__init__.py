@@ -1,7 +1,8 @@
 """Weather Data Formatter - A configurable weather data retrieval and formatting tool.
 
 This package provides a command-line application for retrieving weather data from
-OpenWeatherMap and formatting it into a highly configurable, condensed output format.
+OpenWeatherMap API v3.0 (One Call API) and formatting it into a highly configurable, 
+condensed output format.
 
 The package is organized into the following modules:
 
@@ -27,7 +28,7 @@ Attributes:
     __author__ (str): Package author information
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Weather Formatter Team"
 
 # Public API exports
