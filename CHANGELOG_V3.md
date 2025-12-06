@@ -160,11 +160,11 @@ See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed instructions.
 
 ### Bug Fixes
 
-#### Preamble Separator Issue
-- **Fixed:** Added entry separator after preamble for consistent formatting
-- **Before:** `WEATHER:#76#1pm,9,75#` (no separator after preamble)
-- **After:** `WEATHER:##76#1pm,9,75#` (separator added after preamble)
-- **Impact:** Ensures consistent parsing when preamble is used
+#### Preamble Formatting Issue
+- **Fixed:** Preamble now properly replaces initial separator instead of adding extra separator
+- **Before:** No separator between preamble and first field
+- **After:** `WEATHER:#76#1pm,9,75#` (preamble replaces initial separator)
+- **Impact:** Clean, consistent formatting when preamble is used
 - **Files Modified:** `weather_formatter/formatter.py`, `tests/test_formatter.py`
 
 ### Known Issues

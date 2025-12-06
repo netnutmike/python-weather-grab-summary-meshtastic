@@ -116,10 +116,10 @@ zipcode: "60601"
 
 Default output structure:
 ```
-[preamble][sep][sep][current_temp][sep][hour,icon,temp,precip][sep]...
+[preamble][sep][current_temp][sep][hour,icon,temp,precip][sep]...
 ```
 
-Note: If a preamble is specified, an entry separator is added after it.
+Note: If a preamble is specified, it replaces the initial entry separator.
 
 Example without preamble:
 ```
@@ -128,7 +128,7 @@ Example without preamble:
 
 Example with preamble "WEATHER:":
 ```
-WEATHER:##76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
+WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
 ```
 
 ## Available Output Fields

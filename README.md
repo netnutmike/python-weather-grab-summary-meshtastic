@@ -289,10 +289,10 @@ Note: New API keys may take a few hours to activate.
 The output follows this structure:
 
 ```
-[preamble][entry_sep][entry_sep][current_temp][entry_sep][forecast_1][entry_sep][forecast_2]...[entry_sep]
+[preamble][entry_sep][current_temp][entry_sep][forecast_1][entry_sep][forecast_2]...[entry_sep]
 ```
 
-Note: If a preamble is specified, an entry separator is added after it for consistent formatting.
+Note: If a preamble is specified, it replaces the initial entry separator.
 
 Each forecast entry contains the configured fields separated by the field separator:
 
@@ -309,7 +309,7 @@ Each forecast entry contains the configured fields separated by the field separa
 
 **With Preamble:**
 ```
-WEATHER:##76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
+WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
 ```
 
 **Custom Separators (| and :):**
