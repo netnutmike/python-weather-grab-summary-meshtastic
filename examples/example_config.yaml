@@ -9,14 +9,23 @@
 
 # Your OpenWeatherMap API key (REQUIRED)
 # Get a free API key at: https://openweathermap.org/api
-# The free tier includes 1,000 API calls per day
+# NOTE: This application uses API v3 (One Call API 3.0) which requires a subscription
+# A free tier is available with 1,000 API calls per day
 api_key: "YOUR_API_KEY_HERE"
 
 # =============================================================================
 # LOCATION SETTINGS
 # =============================================================================
 
-# US ZIP code for weather lookup (REQUIRED)
+# You can specify location using EITHER latitude/longitude OR a US ZIP code
+# The application will automatically convert ZIP codes to coordinates
+
+# Option 1: Latitude and Longitude (recommended for API v3)
+# Uncomment and set these values to use coordinates directly
+# latitude: 40.7128
+# longitude: -74.0060
+
+# Option 2: US ZIP code (will be automatically converted to lat/lon)
 # Must be a 5-digit US ZIP code
 zipcode: "10001"
 
@@ -267,6 +276,7 @@ icon_mappings:
 
 # Example with preamble "WEATHER:":
 # WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
+# Note: The preamble replaces the initial entry separator
 
 # Example with custom separators (entry_sep: "|", field_sep: ":"):
 # |76|1pm:9:75:0.0|2pm:9:76:0.0|3pm:9:76:0.0|

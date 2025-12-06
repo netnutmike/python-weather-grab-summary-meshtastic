@@ -53,6 +53,8 @@ class WeatherFormatter:
         Creates the full output string following the pattern:
         [preamble][entry_sep][current_temp][entry_sep][forecast_1][entry_sep]...[entry_sep]
         
+        If preamble is specified, it replaces the initial entry separator.
+        
         Args:
             current_temp: Current temperature value
             forecast: List of WeatherData objects for forecast entries
@@ -61,11 +63,20 @@ class WeatherFormatter:
             Formatted output string
             
         Example:
-            With defaults (entry_sep="#", field_sep=",", fields=["hour","icon","temp","precip"]):
+            Without preamble (entry_sep="#", field_sep=",", fields=["hour","icon","temp","precip"]):
             "#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#"
+            
+            With preamble="WEATHER:" (entry_sep="#"):
+            "WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#"
         """
-        # Start with entry separator
-        output_parts = [self.config.entry_separator]
+        output_parts = []
+        
+        # Add preamble or initial separator
+        if self.config.preamble:
+            output_parts.append(self.config.preamble)
+        
+        # Add entry separator before current temp
+        output_parts.append(self.config.entry_separator)
         
         # Add current temperature
         output_parts.append(str(int(current_temp)))
@@ -77,13 +88,7 @@ class WeatherFormatter:
             output_parts.append(entry)
             output_parts.append(self.config.entry_separator)
         
-        output = "".join(output_parts)
-        
-        # Apply preamble if configured
-        if self.config.preamble:
-            output = self._apply_preamble(output)
-        
-        return output
+        return "".join(output_parts)
     
     def _format_entry(self, weather: WeatherData) -> str:
         """Format single forecast entry with configured fields.
@@ -170,24 +175,4 @@ class WeatherFormatter:
                 # Field not found, skip it
                 return None
     
-    def _apply_preamble(self, output: str) -> str:
-        """Apply preamble prefix to output string.
-        
-        Adds the configured preamble string to the beginning of the output.
-        Handles empty preambles (returns output unchanged) and supports
-        multi-character and special character preambles.
-        
-        Args:
-            output: Output string to prefix
-            
-        Returns:
-            Output string with preamble prefix, or unchanged if preamble is empty
-            
-        Example:
-            >>> formatter._apply_preamble("#76#1pm,9,75#")
-            "WEATHER:#76#1pm,9,75#"  # if preamble is "WEATHER:"
-        """
-        if not self.config.preamble:
-            return output
-        
-        return self.config.preamble + output
+

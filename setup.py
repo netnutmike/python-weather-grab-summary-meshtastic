@@ -7,9 +7,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="weather-formatter",
-    version="1.0.0",
+    version="2.0.0",
     author="Weather Formatter Team",
-    description="A configurable weather data retrieval and formatting tool",
+    description="A configurable weather data retrieval and formatting tool using OpenWeatherMap API v3",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),

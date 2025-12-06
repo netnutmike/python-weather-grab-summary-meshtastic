@@ -11,7 +11,9 @@ class WeatherConfig:
     """Configuration data structure for Weather Formatter.
     
     Attributes:
-        zipcode: ZIP code for weather lookup
+        latitude: Latitude coordinate for weather lookup
+        longitude: Longitude coordinate for weather lookup
+        zipcode: ZIP code for weather lookup (will be converted to lat/lon)
         api_key: OpenWeatherMap API key
         forecast_hours: Number of forecast hours to retrieve (default: 5)
         forecast_day: Day for forecast - 'today' or 'tomorrow' (default: 'today')
@@ -21,6 +23,8 @@ class WeatherConfig:
         icon_mappings: Dictionary mapping weather conditions to icon codes
         preamble: Optional prefix string for output (default: '')
     """
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     zipcode: Optional[str] = None
     api_key: Optional[str] = None
     forecast_hours: int = 5
@@ -39,11 +43,27 @@ class WeatherConfig:
         """
         errors = []
         
-        # Check required fields
-        if not self.zipcode:
-            errors.append("zipcode is required")
-        elif not self.zipcode.isdigit() or len(self.zipcode) != 5:
-            errors.append("zipcode must be a 5-digit US ZIP code")
+        # Check that either lat/lon or zipcode is provided
+        has_coords = self.latitude is not None and self.longitude is not None
+        has_zipcode = self.zipcode is not None
+        
+        if not has_coords and not has_zipcode:
+            errors.append("either latitude/longitude or zipcode is required")
+        
+        # Validate latitude if provided
+        if self.latitude is not None:
+            if not isinstance(self.latitude, (int, float)) or not (-90 <= self.latitude <= 90):
+                errors.append("latitude must be a number between -90 and 90")
+        
+        # Validate longitude if provided
+        if self.longitude is not None:
+            if not isinstance(self.longitude, (int, float)) or not (-180 <= self.longitude <= 180):
+                errors.append("longitude must be a number between -180 and 180")
+        
+        # Validate zipcode format if provided
+        if self.zipcode is not None:
+            if not self.zipcode.isdigit() or len(self.zipcode) != 5:
+                errors.append("zipcode must be a 5-digit US ZIP code")
             
         if not self.api_key:
             errors.append("api_key is required")
@@ -102,6 +122,8 @@ def load_config(config_path: str = "weather_config.yaml") -> Optional[WeatherCon
         
         # Extract fields with defaults
         config = WeatherConfig(
+            latitude=data.get('latitude'),
+            longitude=data.get('longitude'),
             zipcode=data.get('zipcode'),
             api_key=data.get('api_key'),
             forecast_hours=data.get('forecast_hours', 5),
@@ -145,10 +167,16 @@ def create_default_config(config_path: str = "weather_config.yaml") -> None:
 
 # Weather API Configuration
 # Get your free API key from: https://openweathermap.org/api
+# NOTE: API v3 (One Call API 3.0) requires a subscription (free tier available)
 api_key: "YOUR_API_KEY_HERE"
 
 # Location Settings
-# US ZIP code (5 digits)
+# You can specify location using EITHER:
+# 1. Latitude and Longitude (recommended for API v3)
+# latitude: 40.7128
+# longitude: -74.0060
+
+# 2. US ZIP code (will be automatically converted to lat/lon)
 zipcode: "10001"
 
 # Forecast Settings
@@ -263,6 +291,8 @@ def merge_config(file_config: Optional[WeatherConfig], cli_args) -> WeatherConfi
     else:
         # Create a copy to avoid modifying the original
         config = WeatherConfig(
+            latitude=file_config.latitude,
+            longitude=file_config.longitude,
             zipcode=file_config.zipcode,
             api_key=file_config.api_key,
             forecast_hours=file_config.forecast_hours,
@@ -282,6 +312,14 @@ def merge_config(file_config: Optional[WeatherConfig], cli_args) -> WeatherConfi
         elif isinstance(cli_args, dict):
             return cli_args.get(name, default)
         return default
+    
+    latitude = get_arg('latitude')
+    if latitude is not None:
+        config.latitude = latitude
+    
+    longitude = get_arg('longitude')
+    if longitude is not None:
+        config.longitude = longitude
     
     zipcode = get_arg('zipcode')
     if zipcode is not None:

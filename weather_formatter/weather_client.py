@@ -52,16 +52,20 @@ class WeatherAPIError(Exception):
 
 
 class WeatherClient:
-    """Client for OpenWeatherMap API.
+    """Client for OpenWeatherMap API v3.
     
-    Handles API requests for current weather and hourly forecasts.
-    Provides error handling for network issues and API errors.
+    Handles API requests for current weather and hourly forecasts using
+    latitude and longitude coordinates. Provides geocoding to convert
+    ZIP codes to coordinates.
     
     Example:
         >>> client = WeatherClient(api_key="your_api_key")
-        >>> current = client.get_current_weather("10001")
+        >>> # Using lat/lon directly
+        >>> current = client.get_current_weather(lat=40.7128, lon=-74.0060)
         >>> print(f"Current temp: {current.temp}°F")
-        >>> forecast = client.get_hourly_forecast("10001", hours=5, day="today")
+        >>> # Using zipcode (auto-converts to lat/lon)
+        >>> lat, lon = client.geocode_zipcode("10001")
+        >>> forecast = client.get_hourly_forecast(lat=lat, lon=lon, hours=5, day="today")
         >>> for entry in forecast:
         ...     print(f"{entry.hour}: {entry.temp}°F, {entry.condition}")
     """
@@ -70,24 +74,63 @@ class WeatherClient:
         """Initialize WeatherClient with API key.
         
         Sets up the HTTP session with a 10-second timeout for all requests.
+        Uses API v3 endpoints with lat/lon coordinates.
         
         Args:
             api_key: OpenWeatherMap API key
         """
         self.api_key = api_key
-        self.base_url = "https://api.openweathermap.org/data/2.5"
+        self.base_url = "https://api.openweathermap.org/data/3.0"
+        self.geo_url = "http://api.openweathermap.org/geo/1.0"
         self.session = requests.Session()
         self.session.timeout = 10
 
+    def geocode_zipcode(self, zipcode: str) -> tuple[float, float]:
+        """Convert US ZIP code to latitude and longitude coordinates.
+        
+        Uses OpenWeatherMap's Geocoding API to convert a ZIP code to coordinates.
+        
+        Args:
+            zipcode: US ZIP code (5 digits)
+            
+        Returns:
+            Tuple of (latitude, longitude)
+            
+        Raises:
+            WeatherAPIError: If geocoding fails or ZIP code is invalid
+            
+        Example:
+            >>> client = WeatherClient("your_api_key")
+            >>> lat, lon = client.geocode_zipcode("10001")
+            >>> print(f"Coordinates: {lat}, {lon}")
+        """
+        endpoint = f"{self.geo_url}/zip"
+        params = {
+            "zip": f"{zipcode},US",
+            "appid": self.api_key
+        }
+        
+        data = self._make_request(endpoint, params)
+        
+        lat = data.get("lat")
+        lon = data.get("lon")
+        
+        if lat is None or lon is None:
+            raise WeatherAPIError(
+                f"Could not geocode ZIP code {zipcode}. Please verify it's a valid US ZIP code."
+            )
+        
+        return lat, lon
     
-    def get_current_weather(self, zipcode: str) -> WeatherData:
-        """Get current weather for a zipcode.
+    def get_current_weather(self, lat: float, lon: float) -> WeatherData:
+        """Get current weather for coordinates.
         
         Retrieves current weather conditions including temperature, feels-like
         temperature, weather condition, humidity, wind, and pressure.
         
         Args:
-            zipcode: US ZIP code (5 digits)
+            lat: Latitude coordinate
+            lon: Longitude coordinate
             
         Returns:
             WeatherData object with current weather information
@@ -97,54 +140,56 @@ class WeatherClient:
             
         Example:
             >>> client = WeatherClient("your_api_key")
-            >>> weather = client.get_current_weather("10001")
+            >>> weather = client.get_current_weather(lat=40.7128, lon=-74.0060)
             >>> print(f"Temperature: {weather.temp}°F")
             >>> print(f"Condition: {weather.condition}")
         """
-        endpoint = f"{self.base_url}/weather"
+        endpoint = f"{self.base_url}/onecall"
         params = {
-            "zip": f"{zipcode},US",
+            "lat": lat,
+            "lon": lon,
             "appid": self.api_key,
-            "units": "imperial"
+            "units": "imperial",
+            "exclude": "minutely,daily,alerts"
         }
         
         data = self._make_request(endpoint, params)
         
-        # Parse response into WeatherData
-        dt = datetime.fromtimestamp(data["dt"])
+        # Parse current weather from response
+        current = data.get("current", {})
+        dt = datetime.fromtimestamp(current.get("dt", 0))
         hour_12 = dt.strftime("%-I%p").lower()
         
-        weather_info = data["weather"][0] if data.get("weather") else {}
-        main_info = data.get("main", {})
-        wind_info = data.get("wind", {})
+        weather_info = current.get("weather", [{}])[0]
         
         return WeatherData(
             timestamp=dt,
             hour=hour_12,
-            temp=main_info.get("temp", 0.0),
-            feels_like=main_info.get("feels_like", 0.0),
+            temp=current.get("temp", 0.0),
+            feels_like=current.get("feels_like", 0.0),
             condition=weather_info.get("description", "unknown"),
             condition_code=weather_info.get("id", 0),
-            precip=data.get("rain", {}).get("1h", 0.0) + data.get("snow", {}).get("1h", 0.0),
-            humidity=main_info.get("humidity", 0),
-            wind_speed=wind_info.get("speed", 0.0),
-            wind_direction=wind_info.get("deg", 0),
-            pressure=main_info.get("pressure", 0),
-            visibility=data.get("visibility"),
-            raw_data=data
+            precip=current.get("rain", {}).get("1h", 0.0) + current.get("snow", {}).get("1h", 0.0),
+            humidity=current.get("humidity", 0),
+            wind_speed=current.get("wind_speed", 0.0),
+            wind_direction=current.get("wind_deg", 0),
+            pressure=current.get("pressure", 0),
+            uv_index=current.get("uvi"),
+            visibility=current.get("visibility"),
+            dew_point=current.get("dew_point"),
+            raw_data=current
         )
 
-    
-    def get_hourly_forecast(self, zipcode: str, hours: int, day: str = "today") -> List[WeatherData]:
-        """Get hourly forecast for a zipcode.
+    def get_hourly_forecast(self, lat: float, lon: float, hours: int, day: str = "today") -> List[WeatherData]:
+        """Get hourly forecast for coordinates.
         
         Retrieves forecast data for the specified number of hours. The forecast
-        can be filtered to show only today's or tomorrow's data. Note that
-        OpenWeatherMap provides forecasts in 3-hour intervals, so the actual
-        number of entries may vary slightly.
+        can be filtered to show only today's or tomorrow's data. API v3 provides
+        hourly forecasts for up to 48 hours.
         
         Args:
-            zipcode: US ZIP code (5 digits)
+            lat: Latitude coordinate
+            lon: Longitude coordinate
             hours: Number of forecast hours to retrieve
             day: "today" or "tomorrow" to filter forecast data (default: "today")
             
@@ -156,15 +201,17 @@ class WeatherClient:
             
         Example:
             >>> client = WeatherClient("your_api_key")
-            >>> forecast = client.get_hourly_forecast("10001", hours=8, day="tomorrow")
+            >>> forecast = client.get_hourly_forecast(lat=40.7128, lon=-74.0060, hours=8, day="tomorrow")
             >>> for entry in forecast:
             ...     print(f"{entry.hour}: {entry.temp}°F, {entry.precip}% chance of rain")
         """
-        endpoint = f"{self.base_url}/forecast"
+        endpoint = f"{self.base_url}/onecall"
         params = {
-            "zip": f"{zipcode},US",
+            "lat": lat,
+            "lon": lon,
             "appid": self.api_key,
-            "units": "imperial"
+            "units": "imperial",
+            "exclude": "current,minutely,daily,alerts"
         }
         
         data = self._make_request(endpoint, params)
@@ -174,12 +221,13 @@ class WeatherClient:
         
         # Determine target date based on day parameter
         if day.lower() == "tomorrow":
-            target_date = now.date().replace(day=now.day + 1)
+            from datetime import timedelta
+            target_date = (now + timedelta(days=1)).date()
         else:
             target_date = now.date()
         
-        # Parse forecast entries
-        for item in data.get("list", []):
+        # Parse hourly forecast entries
+        for item in data.get("hourly", []):
             dt = datetime.fromtimestamp(item["dt"])
             
             # Filter by target date
@@ -191,9 +239,7 @@ class WeatherClient:
                 break
             
             hour_12 = dt.strftime("%-I%p").lower()
-            weather_info = item["weather"][0] if item.get("weather") else {}
-            main_info = item.get("main", {})
-            wind_info = item.get("wind", {})
+            weather_info = item.get("weather", [{}])[0]
             
             # Calculate precipitation probability
             precip_prob = item.get("pop", 0.0) * 100  # Convert to percentage
@@ -201,16 +247,18 @@ class WeatherClient:
             weather_data = WeatherData(
                 timestamp=dt,
                 hour=hour_12,
-                temp=main_info.get("temp", 0.0),
-                feels_like=main_info.get("feels_like", 0.0),
+                temp=item.get("temp", 0.0),
+                feels_like=item.get("feels_like", 0.0),
                 condition=weather_info.get("description", "unknown"),
                 condition_code=weather_info.get("id", 0),
                 precip=precip_prob,
-                humidity=main_info.get("humidity", 0),
-                wind_speed=wind_info.get("speed", 0.0),
-                wind_direction=wind_info.get("deg", 0),
-                pressure=main_info.get("pressure", 0),
+                humidity=item.get("humidity", 0),
+                wind_speed=item.get("wind_speed", 0.0),
+                wind_direction=item.get("wind_deg", 0),
+                pressure=item.get("pressure", 0),
+                uv_index=item.get("uvi"),
                 visibility=item.get("visibility"),
+                dew_point=item.get("dew_point"),
                 raw_data=item
             )
             
@@ -242,7 +290,7 @@ class WeatherClient:
                 )
             elif response.status_code == 404:
                 raise WeatherAPIError(
-                    "Invalid zipcode. Please provide a valid 5-digit US ZIP code."
+                    "Location not found. Please check your coordinates or ZIP code."
                 )
             elif response.status_code == 429:
                 raise WeatherAPIError(

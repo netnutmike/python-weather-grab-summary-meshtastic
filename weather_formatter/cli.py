@@ -44,6 +44,7 @@ def parse_arguments() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  weather-formatter --lat 40.7128 --lon -74.0060 -k YOUR_API_KEY
   weather-formatter -z 10001 -k YOUR_API_KEY
   weather-formatter --config my_config.yaml --hours 8 --day tomorrow
   weather-formatter -z 90210 --fields hour,icon,temp,humidity
@@ -53,15 +54,32 @@ Configuration:
   Settings can be specified in a YAML config file (default: weather_config.yaml)
   or via command-line arguments. CLI arguments override config file settings.
   
+  Location can be specified using either latitude/longitude or US ZIP code.
+  If a ZIP code is provided, it will be automatically converted to coordinates.
+  
   If no config file exists, a default one will be created on first run.
         """
     )
     
     # Location and API settings
     parser.add_argument(
+        '--lat', '--latitude',
+        type=float,
+        dest='latitude',
+        help='Latitude coordinate for weather lookup'
+    )
+    
+    parser.add_argument(
+        '--lon', '--longitude',
+        type=float,
+        dest='longitude',
+        help='Longitude coordinate for weather lookup'
+    )
+    
+    parser.add_argument(
         '-z', '--zipcode',
         type=str,
-        help='US ZIP code for weather lookup (5 digits)'
+        help='US ZIP code for weather lookup (5 digits, will be converted to lat/lon)'
     )
     
     parser.add_argument(
@@ -136,7 +154,7 @@ def validate_cli_arguments(args: argparse.Namespace) -> list[str]:
     
     Performs validation on CLI arguments that can be checked before
     merging with config file. This includes format validation for
-    zipcode, forecast_day, and forecast_hours.
+    zipcode, latitude, longitude, forecast_day, and forecast_hours.
     
     Args:
         args: Parsed command-line arguments
@@ -145,6 +163,16 @@ def validate_cli_arguments(args: argparse.Namespace) -> list[str]:
         List of error messages. Empty list if all arguments are valid.
     """
     errors = []
+    
+    # Validate latitude if provided
+    if args.latitude is not None:
+        if not (-90 <= args.latitude <= 90):
+            errors.append("latitude must be between -90 and 90")
+    
+    # Validate longitude if provided
+    if args.longitude is not None:
+        if not (-180 <= args.longitude <= 180):
+            errors.append("longitude must be between -180 and 180")
     
     # Validate zipcode format if provided
     if args.zipcode is not None:
@@ -244,13 +272,25 @@ def main() -> int:
         return 1
     
     logger.debug(f"Configuration validated successfully")
-    logger.debug(f"Zipcode: {config.zipcode}, Hours: {config.forecast_hours}, Day: {config.forecast_day}")
     
     # Initialize components
     try:
         # Create WeatherClient
         weather_client = WeatherClient(config.api_key)
         logger.debug("Initialized WeatherClient")
+        
+        # Determine coordinates (either from config or by geocoding zipcode)
+        if config.latitude is not None and config.longitude is not None:
+            lat, lon = config.latitude, config.longitude
+            logger.debug(f"Using coordinates: lat={lat}, lon={lon}")
+        elif config.zipcode is not None:
+            logger.debug(f"Geocoding zipcode: {config.zipcode}")
+            lat, lon = weather_client.geocode_zipcode(config.zipcode)
+            logger.debug(f"Geocoded to: lat={lat}, lon={lon}")
+        else:
+            # This should not happen due to validation, but handle it anyway
+            print("Error: No location specified (latitude/longitude or zipcode required)", file=sys.stderr)
+            return 1
         
         # Create IconMapper with configured or default mappings
         if config.icon_mappings:
@@ -264,20 +304,24 @@ def main() -> int:
         formatter = WeatherFormatter(config, icon_mapper)
         logger.debug("Initialized WeatherFormatter")
         
+    except WeatherAPIError as e:
+        print(f"Weather API error: {e}", file=sys.stderr)
+        return 2
     except Exception as e:
         print(f"Error initializing components: {e}", file=sys.stderr)
         return 3
     
     # Fetch weather data
     try:
-        logger.debug(f"Fetching current weather for zipcode {config.zipcode}")
-        current_weather = weather_client.get_current_weather(config.zipcode)
+        logger.debug(f"Fetching current weather for lat={lat}, lon={lon}")
+        current_weather = weather_client.get_current_weather(lat, lon)
         current_temp = current_weather.temp
         logger.debug(f"Current temperature: {current_temp}°F")
         
         logger.debug(f"Fetching {config.forecast_hours}-hour forecast for {config.forecast_day}")
         forecast = weather_client.get_hourly_forecast(
-            config.zipcode,
+            lat,
+            lon,
             config.forecast_hours,
             config.forecast_day
         )
