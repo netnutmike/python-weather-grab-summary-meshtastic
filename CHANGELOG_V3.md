@@ -1,5 +1,56 @@
 # Changelog: API v3.0 Upgrade
 
+## Version 2.1.0 - Enhanced Features and Bug Fixes
+
+**Release Date:** December 7, 2024
+
+This is a minor version release with new features and bug fixes.
+
+### New Features
+
+#### Enhanced Precipitation Data
+- **Added:** `precip_probability` field for forecast precipitation probability
+- **Improved:** Both current weather and forecast now use consistent precipitation amounts (mm/hour)
+- **Available Fields:** 
+  - `precip` - Precipitation amount in mm/hour (consistent for current and forecast)
+  - `precip_probability` - Precipitation probability 0-100% (forecast only)
+
+#### Improved Icon Mappings
+- **Enhanced:** More granular weather condition mappings
+- **Updated:** Light rain/drizzle conditions now map to "7" (was "2")
+- **Updated:** Sleet conditions now map to "3" (was "8") 
+- **Updated:** Light snow showers now map to "2" (was "8")
+- **Updated:** Tornado conditions now map to "<" (was ";")
+
+#### Local Development Tools
+- **Added:** `install_and_run.sh` - Automated setup script
+- **Added:** `run_weather.py` - Python-based installer and runner
+- **Added:** `check_requirements.py` - System requirements checker
+- **Added:** `Makefile` - Development commands
+- **Added:** `LOCAL_SETUP.md` - Comprehensive local setup guide
+- **Added:** `RUN_LOCALLY.md` - Quick start guide
+
+### Bug Fixes
+
+#### Preamble Formatting
+- **Fixed:** Preamble now uses single separator instead of double
+- **Before:** `WEATHER:##76#1pm,9,75#` (double separator)
+- **After:** `WEATHER:#76#1pm,9,75#` (single separator)
+- **Impact:** Clean, consistent formatting when preamble is used
+
+#### Precipitation Data Consistency
+- **Fixed:** Forecast precipitation now uses actual amounts instead of probability
+- **Before:** Current weather used amount (mm/h), forecast used probability (%)
+- **After:** Both use precipitation amount (mm/h) for consistency
+- **Added:** Separate `precip_probability` field for probability data
+
+### Documentation Updates
+- **Enhanced:** Configuration documentation with One Call API 3.0 details
+- **Improved:** Setup and installation guides
+- **Added:** Multiple installation methods and troubleshooting guides
+
+---
+
 ## Version 2.0.0 - OpenWeatherMap API v3 Migration
 
 **Release Date:** December 5, 2024
@@ -166,6 +217,14 @@ See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed instructions.
 - **After:** `WEATHER:#76#1pm,9,75#` (preamble replaces initial separator)
 - **Impact:** Clean, consistent formatting when preamble is used
 - **Files Modified:** `weather_formatter/formatter.py`, `tests/test_formatter.py`
+
+#### Precipitation Data Consistency
+- **Fixed:** Changed forecast precipitation from probability to actual amount for consistency
+- **Before:** Current weather used amount (mm/h), forecast used probability (%)
+- **After:** Both use precipitation amount (mm/h) for consistency
+- **Added:** New `precip_probability` field for forecast probability data
+- **Impact:** Consistent precipitation units across current and forecast data
+- **Files Modified:** `weather_formatter/weather_client.py`, `weather_formatter/formatter.py`
 
 ### Known Issues
 

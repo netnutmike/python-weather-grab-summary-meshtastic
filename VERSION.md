@@ -1,12 +1,31 @@
 # Version Information
 
-## Current Version: 2.0.0
+## Current Version: 2.1.0
 
 **Release Date:** December 5, 2024
 
 ## Version History
 
-### 2.0.0 (Current) - December 5, 2024
+### 2.1.0 (Current) - December 7, 2024
+**Minor Release - Enhanced Features and Bug Fixes**
+
+#### New Features
+- Added `precip_probability` field for precipitation probability data
+- Enhanced icon mappings with better precipitation categorization
+- Improved local setup scripts and installation methods
+
+#### Bug Fixes
+- Fixed preamble formatting (now single separator after preamble)
+- Fixed precipitation data consistency (both current and forecast use mm/hour)
+
+#### Improvements
+- Better documentation and setup guides
+- Enhanced error messages and troubleshooting
+- Improved icon mappings for weather conditions
+
+---
+
+### 2.0.0 - December 5, 2024
 **Major Release - API v3.0 Migration**
 
 #### Breaking Changes
@@ -61,8 +80,8 @@ print(weather_formatter.__version__)
 ```
 
 ### Package Files
-- `setup.py` - Line 11: `version="2.0.0"`
-- `weather_formatter/__init__.py` - Line 28: `__version__ = "2.0.0"`
+- `setup.py` - Line 11: `version="2.1.0"`
+- `weather_formatter/__init__.py` - Line 28: `__version__ = "2.1.0"`
 
 ## Upgrade Path
 
@@ -74,7 +93,7 @@ print(weather_formatter.__version__)
 
 ## Support
 
-- **Version 2.0.0:** Actively supported
+- **Version 2.1.0:** Actively supported
 - **Version 1.0.0:** Legacy support (API v2.5 may be deprecated by OpenWeatherMap)
 
 ## Documentation

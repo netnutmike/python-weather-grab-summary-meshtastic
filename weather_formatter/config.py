@@ -1,4 +1,4 @@
-"""Configuration management for Weather Formatter."""
+"""Configuration management for Weather Formatter. updated 12-13-25"""
 
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict
@@ -166,18 +166,22 @@ def create_default_config(config_path: str = "weather_config.yaml") -> None:
 # This file contains all configuration options for the Weather Formatter application
 
 # Weather API Configuration
-# Get your free API key from: https://openweathermap.org/api
-# NOTE: API v3 (One Call API 3.0) requires a subscription (free tier available)
+# Get your API key from: https://openweathermap.org/api
+# NOTE: This application uses OpenWeather One Call API 3.0
+# The One Call API 3.0 requires a subscription (there is a free tier with 1,000 calls/day)
+# Sign up at: https://home.openweathermap.org/subscriptions
 api_key: "YOUR_API_KEY_HERE"
 
 # Location Settings
-# You can specify location using EITHER:
-# 1. Latitude and Longitude (recommended for API v3)
-# latitude: 40.7128
-# longitude: -74.0060
+# Provide EITHER zipcode OR latitude/longitude coordinates (not both)
 
-# 2. US ZIP code (will be automatically converted to lat/lon)
+# Option 1: US ZIP code (5 digits)
 zipcode: "10001"
+
+# Option 2: GPS Coordinates in decimal format
+# Uncomment and use these instead of zipcode if you prefer coordinates
+# latitude: 40.7128   # Decimal degrees, range: -90 to 90
+# longitude: -74.0060  # Decimal degrees, range: -180 to 180
 
 # Forecast Settings
 # Number of hours to forecast (positive integer)
@@ -222,13 +226,13 @@ icon_mappings:
   "partly cloudy": "4"
   
   # Rain conditions
-  "light rain": "2"
+  "light rain": "7"
   "moderate rain": "7"
   "heavy intensity rain": "6"
   "very heavy rain": "6"
   "extreme rain": "6"
-  "light intensity drizzle": "2"
-  "drizzle": "2"
+  "light intensity drizzle": "7"
+  "drizzle": "7"
   "rain": "7"
   
   # Thunderstorm conditions
@@ -241,7 +245,7 @@ icon_mappings:
   "snow": "8"
   "light snow": "8"
   "heavy snow": "8"
-  "sleet": "8"
+  "sleet": "3"
   
   # Atmospheric conditions
   "mist": "1"
@@ -261,6 +265,7 @@ icon_mappings:
             f.write(default_config)
     except IOError as e:
         raise IOError(f"Cannot create configuration file at {config_path}: {e}")
+
 
 
 

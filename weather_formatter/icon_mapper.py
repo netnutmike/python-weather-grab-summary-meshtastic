@@ -124,10 +124,10 @@ class IconMapper:
             "cloudy": "0",
             
             # Rain conditions
-            "light rain": "2",
-            "light intensity rain": "2",
-            "drizzle": "2",
-            "light intensity drizzle": "2",
+            "light rain": "7",
+            "light intensity rain": "7",
+            "drizzle": "7",
+            "light intensity drizzle": "7",
             "moderate rain": "7",
             "heavy intensity rain": "6",
             "heavy rain": "6",
@@ -136,8 +136,8 @@ class IconMapper:
             "rain": "7",
             
             # Partially sunny with rain
-            "light intensity shower rain": "3",
-            "shower rain": "3",
+            "light intensity shower rain": "7",
+            "shower rain": "7",
             
             # Thunderstorm conditions
             "thunderstorm": "5",
@@ -152,13 +152,13 @@ class IconMapper:
             "snow": "8",
             "light snow": "8",
             "heavy snow": "8",
-            "sleet": "8",
-            "light shower sleet": "8",
-            "shower sleet": "8",
-            "light rain and snow": "8",
-            "rain and snow": "8",
-            "light shower snow": "8",
-            "shower snow": "8",
+            "sleet": "3",
+            "light shower sleet": "3",
+            "shower sleet": "3",
+            "light rain and snow": "3",
+            "rain and snow": "3",
+            "light shower snow": "2",
+            "shower snow": "2",
             "heavy shower snow": "8",
             
             # Fog/Mist conditions
@@ -172,7 +172,7 @@ class IconMapper:
             # Windy conditions
             "windy": ";",
             "squalls": ";",
-            "tornado": ";",
+            "tornado": "<",
             
             # Default for unknown conditions
             "default": "?"
