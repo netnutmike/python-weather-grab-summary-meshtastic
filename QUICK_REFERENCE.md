@@ -137,7 +137,8 @@ WEATHER:#76#1pm,9,75,0.0#2pm,9,76,0.0#3pm,9,76,0.0#
 - `icon` - Weather icon code
 - `temp` - Temperature
 - `feels_like` - Feels-like temperature
-- `precip` - Precipitation probability
+- `precip` - Precipitation amount (mm/hour)
+- `precip_probability` - Precipitation probability (0-100%)
 - `humidity` - Humidity percentage
 - `wind_speed` - Wind speed
 - `wind_direction` - Wind direction (degrees)

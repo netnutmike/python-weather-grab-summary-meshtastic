@@ -143,6 +143,10 @@ class WeatherFormatter:
             return str(int(weather.feels_like))
         elif field == "precip":
             return f"{weather.precip:.1f}"
+        elif field == "precip_probability":
+            if weather.precip_probability is not None:
+                return f"{weather.precip_probability:.1f}"
+            return "N/A"
         elif field == "humidity":
             return str(weather.humidity)
         elif field == "wind_speed":

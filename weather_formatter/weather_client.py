@@ -18,7 +18,7 @@ class WeatherData:
         feels_like: Feels-like temperature
         condition: Weather condition description
         condition_code: Numeric weather condition code
-        precip: Precipitation probability (0-100) or amount
+        precip: Precipitation amount (mm/hour)
         humidity: Humidity percentage
         wind_speed: Wind speed
         wind_direction: Wind direction in degrees
@@ -26,6 +26,7 @@ class WeatherData:
         uv_index: UV index (optional)
         visibility: Visibility distance (optional)
         dew_point: Dew point temperature (optional)
+        precip_probability: Precipitation probability 0-100% (optional, forecast only)
         raw_data: Complete API response for extensibility
     """
     timestamp: datetime
@@ -42,6 +43,7 @@ class WeatherData:
     uv_index: Optional[float] = None
     visibility: Optional[int] = None
     dew_point: Optional[float] = None
+    precip_probability: Optional[float] = None
     raw_data: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -241,7 +243,9 @@ class WeatherClient:
             hour_12 = dt.strftime("%-I%p").lower()
             weather_info = item.get("weather", [{}])[0]
             
-            # Calculate precipitation probability
+            # Calculate actual precipitation amount (rain + snow)
+            precip_amount = item.get("rain", {}).get("1h", 0.0) + item.get("snow", {}).get("1h", 0.0)
+            # Get precipitation probability
             precip_prob = item.get("pop", 0.0) * 100  # Convert to percentage
             
             weather_data = WeatherData(
@@ -251,7 +255,7 @@ class WeatherClient:
                 feels_like=item.get("feels_like", 0.0),
                 condition=weather_info.get("description", "unknown"),
                 condition_code=weather_info.get("id", 0),
-                precip=precip_prob,
+                precip=precip_amount,
                 humidity=item.get("humidity", 0),
                 wind_speed=item.get("wind_speed", 0.0),
                 wind_direction=item.get("wind_deg", 0),
@@ -259,6 +263,7 @@ class WeatherClient:
                 uv_index=item.get("uvi"),
                 visibility=item.get("visibility"),
                 dew_point=item.get("dew_point"),
+                precip_probability=precip_prob,
                 raw_data=item
             )
             

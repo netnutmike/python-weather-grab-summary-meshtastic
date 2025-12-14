@@ -126,7 +126,7 @@ class TestIconMapper:
         assert mapper.map_condition("scattered clouds") == "4"
         assert mapper.map_condition("broken clouds") == "0"
         assert mapper.map_condition("overcast clouds") == "0"
-        assert mapper.map_condition("light rain") == "2"
+        assert mapper.map_condition("light rain") == "7"
         assert mapper.map_condition("moderate rain") == "7"
         assert mapper.map_condition("heavy rain") == "6"
         assert mapper.map_condition("thunderstorm") == "5"

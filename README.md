@@ -221,7 +221,8 @@ The following fields are available for the `output_fields` configuration:
 - `icon` - Weather condition icon code (mapped via icon_mappings)
 - `temp` - Temperature (integer)
 - `feels_like` - Feels-like temperature (integer)
-- `precip` - Precipitation probability (0-100) or amount
+- `precip` - Precipitation amount (mm/hour)
+- `precip_probability` - Precipitation probability (0-100%) (0-100) or amount
 - `humidity` - Humidity percentage
 - `wind_speed` - Wind speed
 - `wind_direction` - Wind direction in degrees
