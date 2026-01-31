@@ -186,14 +186,15 @@ class WeatherClient:
         """Get hourly forecast for coordinates.
         
         Retrieves forecast data for the specified number of hours. The forecast
-        can be filtered to show only today's or tomorrow's data. API v3 provides
-        hourly forecasts for up to 48 hours.
+        can be filtered to start from today or tomorrow, and will continue across
+        midnight into the next day if needed. API v3 provides hourly forecasts 
+        for up to 48 hours.
         
         Args:
             lat: Latitude coordinate
             lon: Longitude coordinate
             hours: Number of forecast hours to retrieve
-            day: "today" or "tomorrow" to filter forecast data (default: "today")
+            day: "today" or "tomorrow" to set starting point (default: "today")
             
         Returns:
             List of WeatherData objects for the forecast period
@@ -221,20 +222,26 @@ class WeatherClient:
         forecast_list = []
         now = datetime.now()
         
-        # Determine target date based on day parameter
+        # Determine starting date based on day parameter
         if day.lower() == "tomorrow":
             from datetime import timedelta
-            target_date = (now + timedelta(days=1)).date()
+            start_date = (now + timedelta(days=1)).date()
         else:
-            target_date = now.date()
+            start_date = now.date()
+        
+        # Track if we've started collecting data
+        started_collecting = False
         
         # Parse hourly forecast entries
         for item in data.get("hourly", []):
             dt = datetime.fromtimestamp(item["dt"])
             
-            # Filter by target date
-            if dt.date() != target_date:
-                continue
+            # Start collecting when we reach the target date
+            if not started_collecting:
+                if dt.date() == start_date:
+                    started_collecting = True
+                else:
+                    continue
             
             # Stop when we have enough hours
             if len(forecast_list) >= hours:
