@@ -54,7 +54,7 @@ def run_weather_formatter(args=None):
 
 def main():
     """Main function."""
-    print("🌤️  Weather Formatter v2.1.0 - Python Runner")
+    print("🌤️  Weather Formatter v2.1.1 - Python Runner")
     print("============================================")
     
     # Check if dependencies are installed
