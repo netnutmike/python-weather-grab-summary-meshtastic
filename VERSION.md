@@ -1,12 +1,22 @@
 # Version Information
 
-## Current Version: 2.1.0
+## Current Version: 2.1.1
 
-**Release Date:** December 5, 2024
+**Release Date:** February 2, 2026
 
 ## Version History
 
-### 2.1.0 (Current) - December 7, 2024
+### 2.1.1 (Current) - February 2, 2026
+**Patch Release - Bug Fix**
+
+#### Bug Fixes
+- Fixed hourly forecast to continue past midnight into the next day
+- Previously, requesting forecast hours that crossed midnight would stop at midnight
+- Now correctly returns consecutive hours regardless of date boundaries
+
+---
+
+### 2.1.0 - December 7, 2024
 **Minor Release - Enhanced Features and Bug Fixes**
 
 #### New Features
@@ -80,8 +90,8 @@ print(weather_formatter.__version__)
 ```
 
 ### Package Files
-- `setup.py` - Line 11: `version="2.1.0"`
-- `weather_formatter/__init__.py` - Line 28: `__version__ = "2.1.0"`
+- `setup.py` - Line 11: `version="2.1.1"`
+- `weather_formatter/__init__.py` - Line 28: `__version__ = "2.1.1"`
 
 ## Upgrade Path
 
@@ -93,7 +103,7 @@ print(weather_formatter.__version__)
 
 ## Support
 
-- **Version 2.1.0:** Actively supported
+- **Version 2.1.1:** Actively supported
 - **Version 1.0.0:** Legacy support (API v2.5 may be deprecated by OpenWeatherMap)
 
 ## Documentation

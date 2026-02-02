@@ -28,7 +28,7 @@ Attributes:
     __author__ (str): Package author information
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 __author__ = "Weather Formatter Team"
 
 # Public API exports

@@ -1,4 +1,4 @@
-"""Configuration management for Weather Formatter. updated 12-13-25"""
+"""Configuration management for Weather Formatter. updated 12-13-25pip inst"""
 
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict
